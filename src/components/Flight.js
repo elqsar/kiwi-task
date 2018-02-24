@@ -1,15 +1,16 @@
 import React from 'react'
 import moment from 'moment'
 
+const toDate = date => moment(date * 1000).format('DD.MM.YYYY')
+const toTime = date => moment(date * 1000).format('LT')
+
 const Flight = ({ flight }) => {
-
-  const toDate = date => moment(date)
-
   return (
     <div style={ { padding: 8, width: '100%' } }>
-      <p>Date from: { flight.aTime } Date to: {flight.dTime}</p>
-      <p>From: {flight.cityFrom} To: {flight.cityTo}</p>
-      <p>Price: {flight.price} EUR</p>
+      <p><strong>Date:</strong> { toDate(flight.dTime) }</p>
+      <p><strong>Destination:</strong> {flight.cityFrom} - {flight.cityTo}</p>
+      <p><strong>Time:</strong> { toTime(flight.dTime) } - { toTime(flight.aTime) }</p>
+      <p><strong>Price:</strong> {flight.price} EUR</p>
     </div>
   )
 }

@@ -1,8 +1,10 @@
 import React, { Component } from 'react'
 import { ConnectedRouter as Router } from 'react-router-redux'
 import { Provider } from 'react-redux'
+
 import store from './redux'
 import history from './history'
+import SearchFlights from './pages/SearchFlights'
 
 class App extends Component {
   static propTypes = {}
@@ -11,11 +13,7 @@ class App extends Component {
     return (
       <Provider store={store}>
         <Router history={history}>
-          {
-            <div>
-              Welcome
-            </div>
-          }
+          <SearchFlights />
         </Router>
       </Provider>
     )

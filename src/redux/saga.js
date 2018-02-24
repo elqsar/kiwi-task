@@ -1,8 +1,6 @@
 import { all } from 'redux-saga/effects'
-// import {saga as eventsSaga} from '../ducks/events'
+import { saga as flightsSaga } from '../ducks/flights'
 
 export default function* rootSaga() {
-  yield all([
-    // eventsSaga()
-  ])
+  yield all([flightsSaga()])
 }

@@ -1,8 +1,19 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 
-import { fetchAllFlights, loadingSelector, search } from '../ducks/flights'
+import {
+  loadingSelector,
+  search,
+  flightSelector,
+  suggestionsSelector,
+  suggestion,
+  loadMore,
+  totalPagesSelector,
+  nextOffsetSelector
+} from '../ducks/flights'
+
 import SearchFlightsForm from '../components/SearchForm'
+import FlightsList from '../components/FlightsList'
 
 class SearchFlights extends Component {
   static propTypes = {}
@@ -11,9 +22,7 @@ class SearchFlights extends Component {
     super(props)
   }
 
-  componentDidMount() {
-
-  }
+  componentDidMount() {}
 
   render() {
     if (this.props.loading)
@@ -25,7 +34,12 @@ class SearchFlights extends Component {
     return (
       <div>
         <SearchFlightsForm onSubmit={this.props.search} />
-        Search Flights
+        <FlightsList
+          flights={this.props.flights}
+          loadMore={this.props.loadMore}
+          totalPages={this.props.totalPages}
+          nextOffset={this.props.nextOffset}
+        />
       </div>
     )
   }
@@ -33,7 +47,11 @@ class SearchFlights extends Component {
 
 export default connect(
   state => ({
-    loading: loadingSelector(state)
+    loading: loadingSelector(state),
+    flights: flightSelector(state),
+    suggestions: suggestionsSelector(state),
+    totalPages: totalPagesSelector(state),
+    nextOffset: nextOffsetSelector(state)
   }),
-  { fetchAllFlights, search }
+  { search, suggestion, loadMore }
 )(SearchFlights)

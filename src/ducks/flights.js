@@ -1,24 +1,62 @@
-import { all, takeEvery, put, call, take, select } from 'redux-saga/effects'
+import {
+  all,
+  takeEvery,
+  put,
+  call,
+  select,
+  takeLatest
+} from 'redux-saga/effects'
 import { createSelector } from 'reselect'
 
 import API from '../api/kiwi-http-client'
 
 export const moduleName = 'flights'
+
+//<editor-fold desc="Constants">
 export const FETCH_FLIGHTS = `${moduleName}/FETCH_FLIGHTS`
 export const FETCH_FLIGHTS_START = `${moduleName}/FETCH_FLIGHTS_START`
 export const FETCH_FLIGHTS_READY = `${moduleName}/FETCH_FLIGHTS_READY`
+export const FETCH_FLIGHTS_LAZY = `${moduleName}/FETCH_FLIGHTS_LAZY`
+export const FETCH_FLIGHTS_START_LAZY = `${moduleName}/FETCH_FLIGHTS_START_LAZY`
+export const FETCH_FLIGHTS_READY_LAZY = `${moduleName}/FETCH_FLIGHTS_READY_LAZY`
+
+export const GET_SUGGESTIONS = `${moduleName}/GET_SUGGESTIONS`
+export const GET_SUGGESTIONS_READY = `${moduleName}/GET_SUGGESTIONS_READY`
+//</editor-fold>
 
 const initialState = {
   loading: false,
-  flights: []
+  flights: [],
+  suggestions: [],
+  totalPages: 0,
+  lastSearch: {}
 }
 
+//<editor-fold desc="Selectors">
 export const stateSelector = state => state[moduleName]
 export const loadingSelector = createSelector(
   stateSelector,
   state => state.loading
 )
+export const flightSelector = createSelector(
+  stateSelector,
+  state => state.flights
+)
+export const suggestionsSelector = createSelector(
+  stateSelector,
+  state => state.suggestions
+)
+export const totalPagesSelector = createSelector(
+  stateSelector,
+  state => state.totalPages
+)
+export const nextOffsetSelector = createSelector(
+  stateSelector,
+  state => state.lastSearch.offset
+)
+//</editor-fold
 
+//<editor-fold desc="Reducer">
 const reducer = (state = { ...initialState }, action) => {
   const { type, payload } = action
 
@@ -29,49 +67,143 @@ const reducer = (state = { ...initialState }, action) => {
         loading: true
       }
     case FETCH_FLIGHTS_READY:
-      console.log('READY', payload)
       return {
         ...state,
         loading: false,
-        flights: payload
+        flights: payload.flights,
+        totalPages: payload.totalPages,
+        lastSearch: { ...payload.lastSearch }
+      }
+    case FETCH_FLIGHTS_START_LAZY:
+      return {
+        ...state,
+        loading: false
+      }
+    case FETCH_FLIGHTS_READY_LAZY:
+      return {
+        ...state,
+        loading: false,
+        flights: [...state.flights, ...payload.flights],
+        totalPages: payload.totalPages,
+        lastSearch: { ...payload.lastSearch }
+      }
+    case GET_SUGGESTIONS_READY:
+      return {
+        ...state,
+        suggestions: payload
       }
     default:
       return state
   }
 }
+//</editor-fold>
 
+//<editor-fold desc="Actions">
 export function search(searchData) {
   return {
     type: FETCH_FLIGHTS,
-    payload: {
-      ...searchData
-    }
+    payload: searchData
   }
 }
 
-export function fetchAllFlights() {
+export function suggestion(term) {
   return {
-    type: FETCH_FLIGHTS
+    type: GET_SUGGESTIONS,
+    payload: term
   }
 }
 
+export function loadMore() {
+  return {
+    type: FETCH_FLIGHTS_LAZY
+  }
+}
+//</editor-fold>
+
+//<editor-fold desc="Sagas">
 export function* fetchFlightsSaga(action) {
-  const { from, to } = action.payload
+  const { from, to, dateFrom, offset = 0 } = action.payload
 
   yield put({
     type: FETCH_FLIGHTS_START
   })
 
-  const response = yield call(API.allFlights, { from, to })
+  const response = yield call(API.allFlights, {
+    from,
+    to,
+    dateFrom,
+    offset
+  })
+
+  const data = {
+    flights: response.data,
+    totalPages: response._results,
+    lastSearch: {
+      from,
+      to,
+      dateFrom,
+      offset
+    }
+  }
 
   yield put({
     type: FETCH_FLIGHTS_READY,
-    payload: response.data
+    payload: data
+  })
+}
+
+export function* fetchFlightsLazySaga() {
+  const state = yield select(stateSelector)
+  console.log(state.lastSearch)
+  const { from, to, dateFrom, offset } = state.lastSearch
+
+  yield put({
+    type: FETCH_FLIGHTS_START_LAZY
+  })
+
+  const nextOffset = offset + 5
+
+  const response = yield call(API.allFlights, {
+    from,
+    to,
+    dateFrom,
+    offset: nextOffset
+  })
+
+  const data = {
+    flights: response.data,
+    totalPages: response._results,
+    lastSearch: {
+      from,
+      to,
+      dateFrom,
+      offset: nextOffset
+    }
+  }
+
+  yield put({
+    type: FETCH_FLIGHTS_READY_LAZY,
+    payload: data
+  })
+}
+
+export function* suggestLocationSaga(action) {
+  const term = action.payload
+
+  const response = yield call(API.suggestLocation, { term })
+  yield put({
+    type: GET_SUGGESTIONS_READY,
+    payload: response.locations
   })
 }
 
 export function* saga() {
-  yield all([takeEvery(FETCH_FLIGHTS, fetchFlightsSaga)])
+  yield all([
+    takeEvery(FETCH_FLIGHTS, fetchFlightsSaga),
+    takeLatest(GET_SUGGESTIONS, suggestLocationSaga),
+    takeEvery(FETCH_FLIGHTS_LAZY, fetchFlightsLazySaga)
+  ])
 }
+//</editor-fold>
 
 export default reducer

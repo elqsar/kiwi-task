@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { ConnectedRouter as Router } from 'react-router-redux'
 import { Provider } from 'react-redux'
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 
 import store from './redux'
 import history from './history'
@@ -11,11 +12,13 @@ class App extends Component {
 
   render() {
     return (
-      <Provider store={store}>
-        <Router history={history}>
-          <SearchFlights />
-        </Router>
-      </Provider>
+      <MuiThemeProvider>
+        <Provider store={store}>
+          <Router history={history}>
+            <SearchFlights />
+          </Router>
+        </Provider>
+      </MuiThemeProvider>
     )
   }
 }

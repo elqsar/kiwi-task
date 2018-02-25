@@ -21,12 +21,12 @@ const suggestLocation = async ({ term }) => {
 
 const createQuery = ({ from, to, dateFrom, offset }) => {
   // CZ, porto, 03%2F03%2F2018, 03%2F05%2F2018
-  const parsedDate = new Date(dateFrom)
+  const parsedDate = new Date(dateFrom || Date.now())
   const queryDateFrom = encodeURIComponent(prepareDate(parsedDate))
   return `flyFrom=${from}&to=${to}&dateFrom=${queryDateFrom}&dateTo=${queryDateFrom}&directFlights=0&partner=picky&partner_market=eu&curr=EUR&offset=${offset}&limit=5&sort=price`
 }
 
-const prepareDate = date => moment(date).format(DATE_PATTERN) || moment()
+const prepareDate = date => moment(date).format(DATE_PATTERN) || moment().format(DATE_PATTERN)
 
 export default {
   allFlights,

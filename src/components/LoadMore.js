@@ -7,7 +7,7 @@ const LoadMore = ({ flights, loadMore, totalPages, nextOffset }) => {
     if (flights.length && (totalPages > nextOffset)) {
       return (
         <div>
-          <FlatButton label="Load More" primary={true} onClick={loadMore} />
+          <FlatButton label="Load More" primary onClick={loadMore} />
         </div>
       )
     }

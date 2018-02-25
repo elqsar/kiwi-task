@@ -8,9 +8,11 @@ import saga from './saga'
 
 const sagaMiddleware = createSagaMiddleware()
 
+const tools = process.env.NODE_ENV === 'production' ? [] : [logger]
+
 const store = createStore(
   reducer,
-  applyMiddleware(sagaMiddleware, routerMiddleware(history), logger)
+  applyMiddleware(sagaMiddleware, routerMiddleware(history), ...tools)
 )
 
 sagaMiddleware.run(saga)

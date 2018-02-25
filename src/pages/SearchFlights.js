@@ -18,10 +18,6 @@ import FlightsList from '../components/FlightsList'
 class SearchFlights extends Component {
   static propTypes = {}
 
-  constructor(props) {
-    super(props)
-  }
-
   componentDidMount() {}
 
   render() {

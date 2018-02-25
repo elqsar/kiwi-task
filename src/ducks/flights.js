@@ -19,6 +19,7 @@ export const FETCH_FLIGHTS_READY = `${moduleName}/FETCH_FLIGHTS_READY`
 export const FETCH_FLIGHTS_LAZY = `${moduleName}/FETCH_FLIGHTS_LAZY`
 export const FETCH_FLIGHTS_START_LAZY = `${moduleName}/FETCH_FLIGHTS_START_LAZY`
 export const FETCH_FLIGHTS_READY_LAZY = `${moduleName}/FETCH_FLIGHTS_READY_LAZY`
+export const ERROR = `${moduleName}/ERROR`
 
 export const GET_SUGGESTIONS = `${moduleName}/GET_SUGGESTIONS`
 export const GET_SUGGESTIONS_READY = `${moduleName}/GET_SUGGESTIONS_READY`
@@ -29,7 +30,8 @@ const initialState = {
   flights: [],
   suggestions: [],
   totalPages: 0,
-  lastSearch: {}
+  lastSearch: {},
+  errors: []
 }
 
 //<editor-fold desc="Selectors">
@@ -56,7 +58,7 @@ export const nextOffsetSelector = createSelector(
 )
 //</editor-fold
 
-//<editor-fold desc="Reducer">
+//<editor-fold desc="Reducers">
 const reducer = (state = { ...initialState }, action) => {
   const { type, payload } = action
 
@@ -72,7 +74,8 @@ const reducer = (state = { ...initialState }, action) => {
         loading: false,
         flights: payload.flights,
         totalPages: payload.totalPages,
-        lastSearch: { ...payload.lastSearch }
+        lastSearch: { ...payload.lastSearch },
+        errors: []
       }
     case FETCH_FLIGHTS_START_LAZY:
       return {
@@ -85,12 +88,19 @@ const reducer = (state = { ...initialState }, action) => {
         loading: false,
         flights: [...state.flights, ...payload.flights],
         totalPages: payload.totalPages,
-        lastSearch: { ...payload.lastSearch }
+        lastSearch: { ...payload.lastSearch },
+        errors: []
       }
     case GET_SUGGESTIONS_READY:
       return {
         ...state,
         suggestions: payload
+      }
+    case ERROR:
+      return {
+        ...state,
+        loading: false,
+        errors: [payload]
       }
     default:
       return state
@@ -128,33 +138,39 @@ export function* fetchFlightsSaga(action) {
     type: FETCH_FLIGHTS_START
   })
 
-  const response = yield call(API.allFlights, {
-    from,
-    to,
-    dateFrom,
-    offset
-  })
-
-  const data = {
-    flights: response.data,
-    totalPages: response._results,
-    lastSearch: {
+  try {
+    const response = yield call(API.allFlights, {
       from,
       to,
       dateFrom,
       offset
-    }
-  }
+    })
 
-  yield put({
-    type: FETCH_FLIGHTS_READY,
-    payload: data
-  })
+    const data = {
+      flights: response.data,
+      totalPages: response._results,
+      lastSearch: {
+        from,
+        to,
+        dateFrom,
+        offset
+      }
+    }
+
+    yield put({
+      type: FETCH_FLIGHTS_READY,
+      payload: data
+    })
+  } catch (error) {
+    yield put({
+      type: ERROR,
+      payload: error.message
+    })
+  }
 }
 
 export function* fetchFlightsLazySaga() {
   const state = yield select(stateSelector)
-  console.log(state.lastSearch)
   const { from, to, dateFrom, offset } = state.lastSearch
 
   yield put({
@@ -163,28 +179,35 @@ export function* fetchFlightsLazySaga() {
 
   const nextOffset = offset + 5
 
-  const response = yield call(API.allFlights, {
-    from,
-    to,
-    dateFrom,
-    offset: nextOffset
-  })
-
-  const data = {
-    flights: response.data,
-    totalPages: response._results,
-    lastSearch: {
+  try {
+    const response = yield call(API.allFlights, {
       from,
       to,
       dateFrom,
       offset: nextOffset
-    }
-  }
+    })
 
-  yield put({
-    type: FETCH_FLIGHTS_READY_LAZY,
-    payload: data
-  })
+    const data = {
+      flights: response.data,
+      totalPages: response._results,
+      lastSearch: {
+        from,
+        to,
+        dateFrom,
+        offset: nextOffset
+      }
+    }
+
+    yield put({
+      type: FETCH_FLIGHTS_READY_LAZY,
+      payload: data
+    })
+  } catch (error) {
+    yield put({
+      type: ERROR,
+      payload: error.message
+    })
+  }
 }
 
 export function* suggestLocationSaga(action) {
@@ -201,7 +224,7 @@ export function* saga() {
   yield all([
     takeEvery(FETCH_FLIGHTS, fetchFlightsSaga),
     takeLatest(GET_SUGGESTIONS, suggestLocationSaga),
-    takeEvery(FETCH_FLIGHTS_LAZY, fetchFlightsLazySaga)
+    takeLatest(FETCH_FLIGHTS_LAZY, fetchFlightsLazySaga)
   ])
 }
 //</editor-fold>

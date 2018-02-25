@@ -1,13 +1,10 @@
 import React, { Component } from 'react'
 import { reduxForm, Field } from 'redux-form'
 import { DatePicker, TextField } from 'redux-form-material-ui'
+import FlatButton from 'material-ui/FlatButton'
 
 class SearchFlightsForm extends Component {
   static propTypes = {}
-
-  constructor(props) {
-    super(props)
-  }
 
   render() {
     return (
@@ -28,10 +25,10 @@ class SearchFlightsForm extends Component {
             name="dateFrom"
             component={DatePicker}
             format={null}
-            hintText="Date from"
+            hintText="Date"
           />
           <div>
-            <input type="submit" value="Search Flights" />
+            <FlatButton type="submit" label="Search Flights" primary />
           </div>
         </form>
       </div>
@@ -40,6 +37,5 @@ class SearchFlightsForm extends Component {
 }
 
 export default reduxForm({
-  form: 'searchFlights',
-  fields: ['location']
+  form: 'searchFlights'
 })(SearchFlightsForm)

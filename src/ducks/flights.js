@@ -19,6 +19,7 @@ export const FETCH_FLIGHTS_READY = `${moduleName}/FETCH_FLIGHTS_READY`
 export const FETCH_FLIGHTS_LAZY = `${moduleName}/FETCH_FLIGHTS_LAZY`
 export const FETCH_FLIGHTS_START_LAZY = `${moduleName}/FETCH_FLIGHTS_START_LAZY`
 export const FETCH_FLIGHTS_READY_LAZY = `${moduleName}/FETCH_FLIGHTS_READY_LAZY`
+export const RESET_SUGGESTIONS = `${moduleName}/RESET_SUGGESTIONS`
 export const ERROR = `${moduleName}/ERROR`
 
 export const GET_SUGGESTIONS = `${moduleName}/GET_SUGGESTIONS`
@@ -28,7 +29,7 @@ export const GET_SUGGESTIONS_READY = `${moduleName}/GET_SUGGESTIONS_READY`
 const initialState = {
   loading: false,
   flights: [],
-  suggestions: [],
+  suggestions: {},
   totalPages: 0,
   lastSearch: {},
   errors: []
@@ -59,7 +60,7 @@ export const nextOffsetSelector = createSelector(
 //</editor-fold
 
 //<editor-fold desc="Reducers">
-const reducer = (state = { ...initialState }, action) => {
+const reducer = (state = initialState, action) => {
   const { type, payload } = action
 
   switch (type) {
@@ -94,13 +95,20 @@ const reducer = (state = { ...initialState }, action) => {
     case GET_SUGGESTIONS_READY:
       return {
         ...state,
-        suggestions: payload
+        suggestions: {
+          [payload.field]: payload.locations
+        }
       }
     case ERROR:
       return {
         ...state,
         loading: false,
         errors: [payload]
+      }
+    case RESET_SUGGESTIONS:
+      return {
+        ...state,
+        suggestions: []
       }
     default:
       return state
@@ -120,6 +128,12 @@ export function suggestion(term) {
   return {
     type: GET_SUGGESTIONS,
     payload: term
+  }
+}
+
+export function resetSuggestions() {
+  return {
+    type: RESET_SUGGESTIONS
   }
 }
 
@@ -211,12 +225,12 @@ export function* fetchFlightsLazySaga() {
 }
 
 export function* suggestLocationSaga(action) {
-  const term = action.payload
+  const { term, field } = action.payload
 
   const response = yield call(API.suggestLocation, { term })
   yield put({
     type: GET_SUGGESTIONS_READY,
-    payload: response.locations
+    payload: { locations: response.locations, field }
   })
 }
 

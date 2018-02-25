@@ -8,6 +8,10 @@ const client = axios.create({
   baseURL: BASE_URL
 })
 
+const proxy = axios.create({
+  baseURL: 'https://9782cb6s90.execute-api.eu-central-1.amazonaws.com/dev'
+})
+
 const allFlights = async (params) => {
   const query = createQuery(params)
   const { data } = await client.get(`/flights?${query}`)
@@ -15,7 +19,7 @@ const allFlights = async (params) => {
 }
 
 const suggestLocation = async ({ term }) => {
-  const { data } = await client.get(`/locations?term=${term}&v=2&locale=en-US&limit=5`)
+  const { data } = await proxy.post(`/locations`, { term })
   return data
 }
 

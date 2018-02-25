@@ -9,7 +9,8 @@ import {
   suggestion,
   loadMore,
   totalPagesSelector,
-  nextOffsetSelector
+  nextOffsetSelector,
+  resetSuggestions
 } from '../ducks/flights'
 
 import SearchFlightsForm from '../components/SearchForm'
@@ -29,7 +30,12 @@ class SearchFlights extends Component {
       )
     return (
       <div>
-        <SearchFlightsForm onSubmit={this.props.search} />
+        <SearchFlightsForm
+          onSubmit={this.props.search}
+          suggestions={this.props.suggestions}
+          suggestion={this.props.suggestion}
+          resetSuggestions={this.props.resetSuggestions}
+        />
         <FlightsList
           flights={this.props.flights}
           loadMore={this.props.loadMore}
@@ -49,5 +55,5 @@ export default connect(
     totalPages: totalPagesSelector(state),
     nextOffset: nextOffsetSelector(state)
   }),
-  { search, suggestion, loadMore }
+  { search, suggestion, loadMore, resetSuggestions }
 )(SearchFlights)

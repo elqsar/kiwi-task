@@ -9,8 +9,9 @@ export default class Area extends Component {
 
   render() {
     const { suggestions, onSelectSuggestion, forField } = this.props
-    if (suggestions[forField] && suggestions[forField].length > 0) {
-      const data = suggestions[forField].map(it => {
+    const suggestionsForField = suggestions[forField]
+    if (suggestionsForField && suggestionsForField.length > 0) {
+      const data = suggestionsForField.map(it => {
         return (
           <li onClick={() => onSelectSuggestion(it.code, forField)} key={it.id}>
             {it.code} - {it.name}

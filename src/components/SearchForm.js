@@ -31,6 +31,7 @@ class SearchFlightsForm extends Component {
               name="from"
               component={TextField}
               hintText="From"
+              autoComplete="off"
               onChange={this.changeValues}
             />
             <SuggestionArea
@@ -44,6 +45,7 @@ class SearchFlightsForm extends Component {
               name="to"
               component={TextField}
               hintText="To"
+              autoComplete="off"
               onChange={this.changeValues}
             />
             <SuggestionArea

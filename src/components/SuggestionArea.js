@@ -13,9 +13,13 @@ export default class Area extends Component {
     if (suggestionsForField && suggestionsForField.length > 0) {
       const data = suggestionsForField.map(it => {
         return (
-          <li onClick={() => onSelectSuggestion(it.code, forField)} key={it.id}>
-            {it.code} - {it.name}
-          </li>
+          <ul style={
+            { 'list-style-type': 'none' }
+          }>
+            <li onClick={() => onSelectSuggestion(it.code, forField)} key={it.id}>
+              {it.code} - {it.name}
+            </li>
+          </ul>
         )
       })
       return (

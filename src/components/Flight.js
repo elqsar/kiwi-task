@@ -9,7 +9,7 @@ const Flight = ({ flight }) => {
     <div style={ { padding: 8, width: '100%' } }>
       <p><strong>Date:</strong> { toDate(flight.dTime) }</p>
       <p><strong>Destination:</strong> {flight.cityFrom} - {flight.cityTo}</p>
-      <p><strong>Time:</strong> { toTime(flight.dTime) } - { toTime(flight.aTime) }</p>
+      <p><strong>Time:</strong> { toTime(flight.dTime) } - { toTime(flight.aTime) } ( Total duration: { flight.fly_duration } )</p>
       <p><strong>Price:</strong> {flight.price} EUR</p>
     </div>
   )

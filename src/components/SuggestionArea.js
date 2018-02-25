@@ -14,9 +14,9 @@ export default class Area extends Component {
       const data = suggestionsForField.map(it => {
         return (
           <ul style={
-            { 'list-style-type': 'none' }
-          }>
-            <li onClick={() => onSelectSuggestion(it.code, forField)} key={it.id}>
+            { listStyleType: 'none' }
+          } key={it.id}>
+            <li onClick={() => onSelectSuggestion(it.code, forField)}>
               {it.code} - {it.name}
             </li>
           </ul>
